@@ -2,7 +2,10 @@ const express = require('express');
 const cors = require('cors');
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: 'https://helpdesk-assignment.vercel.app',  // ✅ <-- your frontend's deployed URL
+  credentials: true
+}));
 app.use(express.json());
 
 let tickets = [
