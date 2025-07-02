@@ -25,7 +25,7 @@ const Dashboard = () => {
       }, 2000);
       return () => clearTimeout(timer);
     } else {
-      axios.get('http://localhost:5000/tickets').then((res) => {
+      axios.get('https://helpdesk-assignment-4.onrender.com/tickets').then((res) => {
         setTickets(res.data);
       });
     }
@@ -47,27 +47,29 @@ const Dashboard = () => {
     ticket.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
     const title = (form.elements.namedItem('title') as HTMLInputElement).value;
     const description = (form.elements.namedItem('description') as HTMLTextAreaElement).value;
 
-    const newTicket: Ticket = {
-      id: tickets.length + 1,
-      title,
-      description,
-      status: 'Open',
-      assignedTo: 'Unassigned',
-    };
+    try {
+      const res = await axios.post('https://helpdesk-assignment-4.onrender.com/tickets', {
+        title,
+        description,
+      });
 
-    setTickets([newTicket, ...tickets]);
-    form.reset();
+      if (res.data.success) {
+        setTickets([res.data.ticket, ...tickets]);
+        form.reset();
+      }
+    } catch (err) {
+      console.error('Ticket submission failed', err);
+    }
   };
 
   return (
     <div className="flex min-h-screen">
-      {/* Sidebar */}
       <aside className="w-64 bg-white shadow p-6 hidden md:block">
         <h2 className="text-2xl font-bold text-blue-600 mb-8">HelpDesk</h2>
         <nav className="space-y-6 text-gray-700">
@@ -86,9 +88,7 @@ const Dashboard = () => {
         </button>
       </aside>
 
-      {/* Main Content */}
       <main className="flex-1 bg-gray-100 p-6">
-        {/* Top bar */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-blue-700">Welcome back 👋</h1>
           <div className="relative group">
@@ -111,9 +111,8 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Stats widgets */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          {[
+          {[ 
             { label: 'Total Tickets', value: tickets.length, color: 'bg-blue-100 text-blue-700' },
             { label: 'Open', value: tickets.filter(t => t.status === 'Open').length, color: 'bg-green-100 text-green-700' },
             { label: 'Pending', value: tickets.filter(t => t.status === 'Pending').length, color: 'bg-yellow-100 text-yellow-800' },
@@ -126,7 +125,6 @@ const Dashboard = () => {
           ))}
         </div>
 
-        {/* Search + Filter */}
         <input
           type="text"
           placeholder="Search tickets..."
@@ -148,7 +146,6 @@ const Dashboard = () => {
           ))}
         </div>
 
-        {/* Ticket Cards */}
         <div className="grid gap-4">
           {searchedTickets.map((ticket) => (
             <div
@@ -172,7 +169,6 @@ const Dashboard = () => {
           ))}
         </div>
 
-        {/* New Ticket Form */}
         <form onSubmit={handleSubmit} className="bg-white mt-10 p-6 rounded shadow space-y-4">
           <h3 className="text-xl font-bold">Create New Ticket</h3>
           <input name="title" type="text" placeholder="Title" className="w-full border px-4 py-2 rounded" required />

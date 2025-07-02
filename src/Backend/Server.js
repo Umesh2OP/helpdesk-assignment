@@ -29,6 +29,9 @@ let tickets = [
   },
 ];
 
+app.get('/', (req, res) => {
+  res.send('🎉 Helpdesk API is running!');
+});
 
 app.get('/tickets', (req, res) => {
   res.json(tickets);

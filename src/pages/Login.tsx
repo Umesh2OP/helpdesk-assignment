@@ -11,7 +11,7 @@ const Login = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:5000/login', {
+      const res = await axios.post('https://helpdesk-assignment-4.onrender.com/login', {
         email,
         password,
       });
