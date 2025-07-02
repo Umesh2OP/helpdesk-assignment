@@ -16,14 +16,28 @@ const Dashboard = () => {
   const [statusFilter, setStatusFilter] = useState<'All' | 'Open' | 'Pending' | 'Resolved'>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
-    if (!isLoggedIn) navigate('/');
-    axios.get('http://localhost:5000/tickets').then((res) => {
-      setTickets(res.data);
-    });
-  }, []);
+    if (!isLoggedIn) {
+      const timer = setTimeout(() => {
+        navigate('/');
+      }, 2000);
+      return () => clearTimeout(timer);
+    } else {
+      axios.get('http://localhost:5000/tickets').then((res) => {
+        setTickets(res.data);
+      });
+    }
+  }, [isLoggedIn, navigate]);
+
+  if (!isLoggedIn) {
+    return (
+      <div className="flex justify-center items-center h-screen text-lg font-semibold text-red-600">
+        🔐 Please log in to view the dashboard. Redirecting...
+      </div>
+    );
+  }
 
   const filteredTickets =
     statusFilter === 'All' ? tickets : tickets.filter((t) => t.status === statusFilter);
@@ -33,19 +47,22 @@ const Dashboard = () => {
     ticket.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleSubmit = (e: any) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const title = e.target.title.value;
-    const description = e.target.description.value;
-    const newTicket = {
+    const form = e.currentTarget;
+    const title = (form.elements.namedItem('title') as HTMLInputElement).value;
+    const description = (form.elements.namedItem('description') as HTMLTextAreaElement).value;
+
+    const newTicket: Ticket = {
       id: tickets.length + 1,
       title,
       description,
       status: 'Open',
       assignedTo: 'Unassigned',
     };
+
     setTickets([newTicket, ...tickets]);
-    e.target.reset();
+    form.reset();
   };
 
   return (

@@ -29,9 +29,11 @@ let tickets = [
   },
 ];
 
+
 app.get('/tickets', (req, res) => {
   res.json(tickets);
 });
+
 
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
@@ -41,6 +43,15 @@ app.post('/login', (req, res) => {
     res.status(401).json({ success: false });
   }
 });
+
+
+app.post('/tickets', (req, res) => {
+  const newTicket = req.body;
+  newTicket.id = tickets.length + 1;
+  tickets.unshift(newTicket);
+  res.status(201).json({ success: true, ticket: newTicket });
+});
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
